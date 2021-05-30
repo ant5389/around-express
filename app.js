@@ -17,7 +17,7 @@ app.use('/', usersRouter);
 app.use('/', cardsRouter);
 app.use((req, res, next) => {
   req.user = {
-    _id: '' // add id from test user
+    _id: '60b2b7c48fd0e625d19aad94'
   };
 
   next();

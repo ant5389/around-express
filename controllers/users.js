@@ -26,13 +26,15 @@ const createProfile = (req, res) => {
     .catch((err) => res.status(400).send(err));
 };
 
-const updateProfile = (req, res) => {
+const updateProfile = (req, res) => User.findByIdAndUpdate(
+  req.users._id,
+  { new: true }
+);
 
-};
-
-const updateAvatar = (req, res) => {
-
-};
+const updateAvatar = (req, res) => User.findByIdAndUpdate(
+  req.users._id,
+  { new: true }
+);
 
 module.exports = {
   getUsers,
