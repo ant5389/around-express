@@ -1,39 +1,94 @@
 const Card = require('../models/card.js');
 
 const getCards = (req, res) => {
-  return Card.find({})
-    .then(users => res.status(200).send(users))
-    .catch(err => res.status(500).send(err));
+  Card.find({}).orFail(new Error('Error'))
+    .then(user => res.status(200).send(user))
+    .catch((err) => {
+      if (err.message === 'Error') {
+        res.status(404).send({ message: 'Requested resource not found' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Not valid data in params' });
+      } else {
+        res.status(500).send({ message: 'Error' });
+      }
+    });
 };
 
 const createCard = (req, res) => {
-  Card.create({ name: req.body.name, link: req.body.link })
+  Card.create({
+    name: req.body.name,
+    link: req.body.link,
+    owner: req.user._id,
+    createdAt: req.body.createdAt
+  })
     .then(user => {
       console.log(req.user._id);
       res.status(200).send(user);
     })
-    .catch((err) => res.status(400).send(err));
+    .catch(() => {
+      res.status(404).send({ message: 'Not valid data in params' });
+    });
 };
 
 const deleteCard = (req, res) => {
-  Card.remove()
+  Card.deleteOne({ _id: req.params.cardId })
+    .orFail(new Error('Not Found'))
     .then(user => {
       res.status(200).send(user);
     })
-    .catch((err) => res.status(400).send(err));
+    .catch((err) => {
+      console.log(err.name);
+      if (err.message === 'Not Found') {
+        res.status(404).send({ message: 'Requested resource not found' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Not valid data in params' });
+      } else {
+        res.status(500).send({ message: 'Error' });
+      }
+    });
 };
 
-const likeCard = (req, res) => Card.findByIdAndUpdate(
-  req.params.cardId,
-  { $addToSet: { likes: req.user._id } },
-  { new: true },
-);
+const likeCard = (req, res) => {
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
+  ).orFail(new Error('Not Found'))
+    .then(user => {
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      console.log(err.name);
+      if (err.message === 'Not Found') {
+        res.status(404).send({ message: 'Requested resource not found' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Not valid data in params' });
+      } else {
+        res.status(500).send({ message: 'Error' });
+      }
+    });
+};
 
-const dislikeCard = (req, res) => Card.findByIdAndUpdate(
-  req.params.cardId,
-  { $pull: { likes: req.user._id } },
-  { new: true },
-);
+const dislikeCard = (req, res) => {
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $pull: { likes: req.user._id } },
+    { new: true },
+  ).orFail(new Error('Not Found'))
+    .then(user => {
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      console.log(err.name);
+      if (err.message === 'Not Found') {
+        res.status(404).send({ message: 'Requested resource not found' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Not valid data in params ' });
+      } else {
+        res.status(500).send({ message: 'Error' });
+      }
+    });
+};
 
 module.exports = {
   getCards,
